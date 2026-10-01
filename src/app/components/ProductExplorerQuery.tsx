@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ProductSearchForm from "./ProductSearchForm";
-import { defaultQuery, fetchProducts } from "@/lib/products";
-import type { SearchQuery } from "@/lib/products";
+import { defaultQuery, fetchProducts } from "../lib/products";
+import type { SearchQuery } from "../lib/products";
 
 export default function ProductExplorerQuery() {
   const [query, setQuery] = useState<SearchQuery>(defaultQuery);
