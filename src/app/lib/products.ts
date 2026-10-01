@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// รายชื่อหมวดหมู่ คัดลอกจาก https://dummyjson.com/products/category-list
+// รายชื่อหมวดหมู่
 export const CATEGORIES = [
   "beauty",
   "fragrances",
@@ -37,6 +37,8 @@ export const ProductSchema = z.object({
     .int("จำนวนคงเหลือต้องเป็นจำนวนเต็ม")
     .min(0, "จำนวนคงเหลือต้องไม่ติดลบ"),
   category: z.enum(CATEGORIES, { error: "กรุณาเลือกหมวดหมู่" }),
+  description: z.string().trim().optional(),
+  thumbnail: z.string().url("URL รูปภาพไม่ถูกต้อง").or(z.string()).optional(),
 });
 
 export const ProductListSchema = z.object({
@@ -49,6 +51,8 @@ export const ProductListSchema = z.object({
 export type Product = z.infer<typeof ProductSchema>;
 export type ProductList = z.infer<typeof ProductListSchema>;
 
+export const ProductDraftSchema = ProductSchema.omit({ id: true });
+export type ProductDraft = z.infer<typeof ProductDraftSchema>;
 
 const API_BASE = "https://dummyjson.com";
 
@@ -78,19 +82,23 @@ export function buildProductUrl(query: SearchQuery): string {
   params.set("limit", String(query.limit));
   params.set("sortBy", query.sortBy);
   params.set("order", "asc");
-  params.set("select", "title,price,stock,category");
+  params.set("select", "title,price,stock,category,thumbnail");
 
-  return `${API_BASE}/products/search?${params.toString()}`;
+  let url = `${API_BASE}/products/search?${params.toString()}`;
+  console.log("เรียก URL:", url);
+  return url;
 }
 
 export async function fetchProducts(query: SearchQuery): Promise<ProductList> {
   const response = await fetch(buildProductUrl(query));
+  console.log("สถานะการตอบกลับ: ", response);
 
   if (!response.ok) {
     throw new Error(`เรียกข้อมูลไม่สำเร็จ สถานะ ${response.status}`);
   }
 
   const data = await response.json();
+  console.log("ข้อมูลทีได้รับ:", data);
 
   const result = ProductListSchema.safeParse(data);
 
